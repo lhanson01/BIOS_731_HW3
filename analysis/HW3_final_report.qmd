@@ -1,0 +1,62 @@
+---
+title: BIOS 731 Homework 3
+author: Liam Hanson
+format: html
+---
+### Github Repository:
+https://github.com/lhanson01/BIOS_731_HW3
+
+## Problem 1: Newton's Method
+
+The derived gradient and hessian of the log-likelihood are 
+
+$\nabla l(\beta) = [\sum_{i=1}^nX_{ij}(y_i -\pi_i)]_{j \in {1,...,p}}$
+
+and
+
+$\nabla^2l(\beta) = [-\sum_{i=1}^nX_{ij}X_{ik}\pi_{i}]_{j,k \in {1,...,p}}$
+
+where
+
+$$
+\pi_i = \frac{e^{X_i^T\beta}}{1+e^{X_i^T\beta}}.
+$$ The newton update is $\beta_{t+1} = \beta_t + [\nabla^2l(\beta)]^{-1}\nabla l(\beta)$.
+
+The log-likelihood $l(\beta)$ is convex because the the negative of the hessian $\nabla^2l(\beta)$ is positive semi-definite. See attached derivations for proof.
+
+## Problem 2: MM
+
+See attached derivations. Was not able to implement.
+
+## Problem 3: Simulation Study
+
+```{r}
+#| include: false
+
+here::i_am("analysis/HW3_final_report.qmd")
+source(here::here("source","01_newton.R"))
+source(here::here("source","03_optim.R"))
+source(here::here("source","run_simulations.R"))
+```
+
+```{r}
+plot(newton_ll_history, type = "l", main = "Newton log-likelihood", ylab = "Log LL",
+     xlab = "Iterations")
+
+plot(glm_ll_hist, type = "l", main = "GLM log-likelihood", ylab = "Log LL",
+     xlab = "Iterations")
+
+plot(obj_history, type = "l", main = "Optim log-likelihood", ylab = "Log LL",
+     xlab = "Iterations")
+
+barplot(c(t_glm, t_newton, t_optim), main = "Computation time", xlab = "Method", ylab = "Time Elapsed in seconds", names.arg = c("GLM", "Newton", "Optim"))
+
+print(results_frame)
+```
+## Problem 4: EM
+
+See derivations attachment. The fitted $\lambda$ value using EM was 130.18. Percentile bootstrap confidence levels were obtained at $\alpha = 0.005$ giving interval [104, 160].
+
+Survival package function survreg also gave an estimated $\lambda$ of 130.18. The estimated 95% confidence interval was [109, 155]. 
+
+

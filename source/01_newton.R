@@ -1,3 +1,5 @@
+###### ADD TOLERANCE #########
+
 compute_logit_gradient <- function(X, Y, pi){
   gradient <- numeric(length = p + 1)
   for(j in seq_len(p+1)){
@@ -27,15 +29,18 @@ compute_logit_hessian <- function(X, Y, pi){
   return(hessian)
 }
 
+eval_logit_ll <- function(X,Y,beta){
+  logit_ll <- sum(Y*X%*%beta - log(1 + exp(X%*%beta)))
+}
 
-newton <- function(X, Y, beta_init, tolerance, max_iter){
+newton <- function(X, Y, beta_init, convergence_tol, max_iter){
   
   beta <- beta_init
-  beta_history <- gradient_history <- hessian_history <- 
+  beta_history <- gradient_history <- hessian_history <- ll_history <-
     vector("list", length = max_iter)
-  alpha = 0.01
-  
-  for(iter in seq_len(max_iter)){
+
+  iter <- 1
+  while(iter < max_iter & convergence > convergence_tol){
     beta_history[[iter]] <- beta
     pi <- exp(X%*%beta)/(1+exp(X%*%beta))
     iter_gradient <- compute_logit_gradient(X, Y, pi)
@@ -43,14 +48,26 @@ newton <- function(X, Y, beta_init, tolerance, max_iter){
     
     gradient_history[[iter]] <- iter_gradient
     hessian_history[[iter]] <- iter_hessian
+    ll_history[[iter]] <- eval_logit_ll(X, Y, beta)
+    
+    if(iter > 1){
+      convergence <- abs(ll_history[[iter]] - ll_history[[iter-1]])
+    }
     
     ##### Step towards MLE ####
     beta <- beta - solve(iter_hessian)%*%iter_gradient
-    #beta <- beta - alpha*gradient
+    
+
+    
+    iter = iter + 1
     
   }
   
-  return(beta_history)
+  return(tibble(beta_hist = beta_history,
+                hessian_hist = hessian_history,
+                ll_hist = ll_history, 
+                iterations = iter-1)
+         )
   
   
 }
